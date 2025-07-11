@@ -10,7 +10,7 @@ DOCKER_COMPOSE=docker-compose
 
 # Install dependencies
 install:
-	pip install -r requirements.txt
+	uv pip install -r requirements.txt
 
 # Start Neo4j container
 start-db:
@@ -24,6 +24,9 @@ stop-db:
 ingest:
 	$(PYTHON) sample_run.py
 
+run:
+	$(PYTHON) main.py
+	
 # All-in-one command: start DB, install deps, run ingestion
 run-all: start-db install ingest
 

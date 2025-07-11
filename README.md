@@ -34,7 +34,7 @@ A clean and modular pipeline to ingest `UserIntent` and `Bid` JSON data into a N
 
 1. **Install Python dependencies:**
    ```bash
-   pip install -r requirements.txt
+   uv pip install -r requirements.txt
    ```
    This will install the required Python packages, including the Neo4j driver.
 
@@ -68,12 +68,9 @@ A clean and modular pipeline to ingest `UserIntent` and `Bid` JSON data into a N
    ```
    Look for a line like `Remote interface available at http://localhost:7474/` which indicates Neo4j is ready.
 
-3. **Update Neo4j password in `sample_run.py`**  
-   Make sure the password matches the one set in your `docker-compose.yml`.
-
-4. **Run the ingestion script:**
+3. **Run the main ingestion script:**
    ```bash
-   python sample_run.py
+   make run
    ```
 
 ## 🧩 Data Concepts
