@@ -1,0 +1,73 @@
+@startuml
+actor User as "User (You)"
+participant "main.py" as Main
+participant "loader.py" as Loader
+participant "ingestor.py" as Ingestor
+participant "GraphBuilder" as Graph
+participant "Neo4jClient" as Neo4j
+
+== Start Ingestion Pipeline ==
+User -> Main: Run main.py
+
+== Load UserIntents ==
+Main -> Loader: load_user_intents("data/user_intents")
+Loader -> Loader: List files in directory
+loop For each user_intent file
+    Loader -> Loader: Open & parse JSON
+    Loader -> Loader: Map JSON to UserIntentDTO
+end
+Loader --> Main: List[UserIntentDTO]
+
+== Load Bids ==
+Main -> Loader: load_bids("data/bids")
+Loader -> Loader: List files in directory
+loop For each bid file
+    Loader -> Loader: Open & parse JSON
+    Loader -> Loader: Map JSON to BidDTO
+end
+Loader --> Main: List[BidDTO]
+
+== For Each UserIntent ==
+loop For each UserIntentDTO
+    Main -> Main: Filter related bids by intentHash
+
+    == Ingest Pipeline ==
+    Main -> Ingestor: ingest_pipeline(user_intent, related_bids)
+    Ingestor -> Neo4j: Neo4jClient.connect()
+    Ingestor -> Graph: GraphBuilder(db)
+
+    == Insert UserIntent ==
+    Ingestor -> Graph: insert_user_intent(user_intent)
+    Graph -> Neo4j: MERGE Account node
+    Graph -> Neo4j: MERGE UserIntent node
+    Graph -> Neo4j: SET properties on UserIntent
+    Graph -> Neo4j: MERGE (Account)-[:PLACED]->(UserIntent)
+    loop For each dispensableAsset
+        Graph -> Neo4j: MERGE Token node
+        Graph -> Neo4j: MERGE (UserIntent)-[:USES_ASSET]->(Token)
+    end
+    loop For each desiredAsset
+        Graph -> Neo4j: MERGE Token node
+        Graph -> Neo4j: MERGE (UserIntent)-[:DESIRES_ASSET]->(Token)
+    end
+
+    == Insert Related Bids ==
+    loop For each BidDTO in related_bids
+        Ingestor -> Graph: insert_bid(bid)
+        Graph -> Neo4j: MERGE Solver node
+        Graph -> Neo4j: MERGE Bid node
+        Graph -> Neo4j: SET properties on Bid
+        Graph -> Neo4j: MERGE (Solver)-[:RESPONDED_WITH]->(Bid)
+        Graph -> Neo4j: MERGE (Bid)-[:BID_FOR]->(UserIntent)
+        loop For each step in bid.steps
+            Graph -> Neo4j: MERGE Token nodes (consumed/received)
+            Graph -> Neo4j: MERGE (Bid)-[:TRANSFER_STEP]->(Token)
+        end
+    end
+
+    Ingestor -> Neo4j: db.close()
+end
+
+== End ==
+Main -> User: "Ingestion Complete!"
+@enduml

@@ -169,3 +169,7 @@ A **Bid** is a response to a `UserIntent` from a solver or service provider. It 
   `(Account)-[:PLACED]->(UserIntent)<-[:BID_FOR]-(Bid)<-[:RESPONDED_WITH]-(Solver)`
 
 This structure enables efficient multi-hop traversal, reasoning, and traceability in the knowledge graph.
+
+## Sequence Diagram
+
+![ingestion-sequence](ingestion-sequence.png)
