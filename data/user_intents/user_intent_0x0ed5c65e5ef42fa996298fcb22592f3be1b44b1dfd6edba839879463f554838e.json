@@ -1,0 +1,42 @@
+{
+  "intentHash": "0x0ed5c65e5ef42fa996298fcb22592f3be1b44b1dfd6edba839879463f554838e",
+  "intentStatus": "BID_SUBMITTED",
+  "userIntent": {
+    "intentHash": "0x0ed5c65e5ef42fa996298fcb22592f3be1b44b1dfd6edba839879463f554838e",
+    "core": {
+      "permittedAccounts": [
+        {
+          "account": "0x23F04522a2ec5a8b188C48c18edAE54005b537a3",
+          "chainId": 8453
+        }
+      ]
+    },
+    "constraints": {
+      "permittedChains": [
+        42161
+      ],
+      "deadline": 1751304211,
+      "maxGas": 6000000,
+      "slippagePercentage": 5.0,
+      "desiredAssets": [
+        {
+          "asset": "0xfdfff924c413a228c9fc62b1978ed8f755d81111",
+          "value": "500000000000000000000",
+          "chainId": 8453
+        }
+      ],
+      "dispensableAssets": [
+        {
+          "asset": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+          "maxValue": "100000",
+          "chainId": 42161
+        }
+      ]
+    }
+  },
+  "account": "0x448b47F358dA18749529bDeAeC26322E58D13177",
+  "createdAt": "2025-06-30T17:22:33.914788126",
+  "createdAtEpoch": 1751304153,
+  "updatedAt": "2025-06-30T17:22:36.785395867",
+  "updatedAtEpoch": 1751304156
+}
