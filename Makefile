@@ -26,12 +26,12 @@ ingest:
 
 run:
 	$(PYTHON) main.py
-	
+
 # All-in-one command: start DB, install deps, run ingestion
-run-all: start-db install ingest
+run-all: start-db install run
 
 # Clean only Docker data
 clean:
 	docker volume rm chain_graph_pipeline_neo4j_data || true
 
-.PHONY: install start-db stop-db ingest run-all clean
+.PHONY: install start-db stop-db ingest run clean
