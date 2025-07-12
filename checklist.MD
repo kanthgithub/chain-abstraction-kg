@@ -48,7 +48,7 @@
 - [ ] How do you profile and optimize graph queries?
 - [ ] How do you design for scale-out (sharding, clustering, etc.)?
 
-### 9. **Advanced Topics (Bonus)**
+### 9. **Advanced Topics **
 - [ ] How would you implement graph-based ML (e.g., node classification, link prediction)?
 - [ ] How would you integrate tabular and graph data for intelligent agents?
 - [ ] How would you implement CI/CD for your graph/ML pipelines?
