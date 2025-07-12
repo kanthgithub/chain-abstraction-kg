@@ -73,6 +73,12 @@ A clean and modular pipeline to ingest `UserIntent` and `Bid` JSON data into a N
    make run
    ```
 
+4. Start API Layer for REST Calls
+
+```bash
+uvicorn api.cypher-api:app --reload
+```
+
 ## 🧩 Data Concepts
 
 ### What is a UserIntent?

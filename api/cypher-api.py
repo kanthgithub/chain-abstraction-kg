@@ -6,14 +6,27 @@ from query import bid_queries
 
 app = FastAPI(title="Bid Query API")
 
-def get_db():
-    db = Neo4jClient("bolt://localhost:7687", "neo4j", "testtest")
-    try:
-        yield db
-    finally:
-        db.close()
+# global variable for the Neo4j client
+neo4j_client: Optional[Neo4jClient] = None
 
-# POSTMAN: GET http://localhost:8000/bids/by-solver?solver_address=0xABC...
+@app.on_event("startup")
+def startup_event():
+    global neo4j_client
+    neo4j_client = Neo4jClient("bolt://localhost:7687", "neo4j", "testtest")
+
+@app.on_event("shutdown")
+def shutdown_event():
+    global neo4j_client
+    if neo4j_client:
+        neo4j_client.close()
+
+def get_db():
+    # Dependency that returns the singleton client
+    return neo4j_client
+
+# Returns all bids responded by a given solver address.
+# Query Parameters:
+#   - solver_address: str (required) - The address of the solver.
 @app.get("/bids/by-solver")
 def bids_by_solver(
     solver_address: str = Query(..., description="Solver address"),
@@ -26,7 +39,9 @@ def bids_by_solver(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# POSTMAN: GET http://localhost:8000/bids/by-intent?intent_hash=0xABC...
+# Returns all bids for a given user intent.
+# Query Parameters:
+#   - intent_hash: str (required) - The hash of the user intent.
 @app.get("/bids/by-intent")
 def bids_by_intent(
     intent_hash: str = Query(..., description="UserIntent hash"),
@@ -38,7 +53,9 @@ def bids_by_intent(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# POSTMAN: GET http://localhost:8000/bids/steps-tokens?bid_hash=0xABC...
+# Returns all steps and tokens for a given bid.
+# Query Parameters:
+#   - bid_hash: str (required) - The hash of the bid.
 @app.get("/bids/steps-tokens")
 def steps_and_tokens(
     bid_hash: str = Query(..., description="Bid hash"),
@@ -51,7 +68,9 @@ def steps_and_tokens(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# POSTMAN: GET http://localhost:8000/bids/by-account?account_address=0xABC...
+# Returns all bids for a given account address.
+# Query Parameters:
+#   - account_address: str (required) - The address of the account.
 @app.get("/bids/by-account")
 def bids_by_account(
     account_address: str = Query(..., description="Account address"),
@@ -63,7 +82,9 @@ def bids_by_account(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# POSTMAN: GET http://localhost:8000/solvers/by-account?account_address=0xABC...
+# Returns all solvers who have ever responded to a user's intents.
+# Query Parameters:
+#   - account_address: str (required) - The address of the account.
 @app.get("/solvers/by-account")
 def solvers_by_account(
     account_address: str = Query(..., description="Account address"),
@@ -75,8 +96,8 @@ def solvers_by_account(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# 6. Get the full bid path: Account → UserIntent → Bid → Solver
-# POSTMAN: GET http://localhost:8000/bids/paths
+# Returns the full bid path: Account → UserIntent → Bid → Solver.
+# No query parameters.
 @app.get("/bids/paths")
 def bid_paths(db: Neo4jClient = Depends(get_db)):
     try:
@@ -88,8 +109,7 @@ def bid_paths(db: Neo4jClient = Depends(get_db)):
         # Handle any other unexpected errors
         raise HTTPException(status_code=500, detail="Unexpected server error")
     
-# 7. Get all tokens transferred in all steps for a given solver (crazy traversal)
-# POSTMAN: GET http://localhost:8000/bids/tokens-by-solver?solver_address=0xABC...
+# Get all tokens transferred in all steps for a given solver (crazy traversal)
 @app.get("/bids/tokens-by-solver")
 def tokens_by_solver(
     solver_address: str = Query(..., description="Solver address"),
@@ -102,8 +122,7 @@ def tokens_by_solver(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# 8. Find the most active solver (mind-blowing analytics)
-# POSTMAN: GET http://localhost:8000/solvers/most-active
+# Find the most active solver (mind-blowing analytics)
 @app.get("/solvers/most-active")
 def most_active_solver(
     db: Neo4jClient = Depends(get_db)
@@ -116,8 +135,7 @@ def most_active_solver(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# 9. Find all accounts whose intents have never received a bid (deep negative traversal)
-# POSTMAN: GET http://localhost:8000/accounts/no-bids
+# Find all accounts whose intents have never received a bid (deep negative traversal)
 @app.get("/accounts/no-bids")
 def accounts_with_no_bids(
     db: Neo4jClient = Depends(get_db)
@@ -127,8 +145,8 @@ def accounts_with_no_bids(
         return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-# 10. Get the full execution trace for a bid (if you add executions)
-# POSTMAN: GET http://localhost:8000/bids/execution-trace?bid_hash=0xABC...
+
+# Get the full execution trace for a bid (if you add executions)
 @app.get("/bids/execution-trace")
 def execution_trace(
     bid_hash: str = Query(..., description="Bid hash"),
